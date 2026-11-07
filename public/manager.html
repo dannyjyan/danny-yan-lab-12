@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Movie Manager - Agent Panel</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+
+<body class="bg-light py-4">
+  <div class="container">
+    <h1 class="mb-4">Movie Manager (Agent Side)</h1>
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs mb-4 justify-content-center" id="agentTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="movies-tab" data-bs-toggle="tab" data-bs-target="#movies" type="button" role="tab"
+          aria-controls="movies" aria-selected="false">
+          Movie Manager
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="chat-tab" data-bs-toggle="tab" data-bs-target="#chat" type="button"
+          role="tab" aria-controls="chat" aria-selected="true">
+          Customer Service
+        </button>
+      </li>
+    </ul>
+
+    <div class="tab-content" id="agentTabsContent">
+      <!-- Movie Manager Tab -->
+      <div class="tab-pane fade" id="movies" role="tabpanel" aria-labelledby="movies-tab">
+        <div class="table-responsive mb-5">
+          <table class="table table-striped table-bordered align-middle" id="movieTable">
+            <thead class="table-dark">
+              <tr>
+                <th>Name</th>
+                <th>Genre</th>
+                <th>Rating</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <!-- Collapsible Add Movie Form -->
+        <div class="accordion mb-5" id="movieAccordion">
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingAddMovie">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                data-bs-target="#collapseAddMovie" aria-expanded="false" aria-controls="collapseAddMovie">
+                ➕ Add a New Movie
+              </button>
+            </h2>
+            <div id="collapseAddMovie" class="accordion-collapse collapse" aria-labelledby="headingAddMovie"
+              data-bs-parent="#movieAccordion">
+              <div class="accordion-body">
+                <form id="addMovieForm">
+                  <div class="mb-3">
+                    <label for="newName" class="form-label">Name</label>
+                    <input type="text" id="newName" class="form-control" required />
+                  </div>
+                  <div class="mb-3">
+                    <label for="newGenre" class="form-label">Genre</label>
+                    <input type="text" id="newGenre" class="form-control" required />
+                  </div>
+                  <div class="text-center">
+                    <button type="submit" class="btn btn-primary">Add Movie</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Customer Service Chat Tab -->
+      <div class="tab-pane fade show active" id="chat" role="tabpanel" aria-labelledby="chat-tab">
+        <div class="chatbox mt-4">
+          <h4>Live Chat with Users</h4>
+
+          <div class="alert alert-info text-center" role="alert">
+            Note: You don't need to implement anything new on the manager side besides Lab 05 (for persistent storage),
+            as the manager doesn't interact with Gemini directly. The manager is simply a way to send direct messages
+            to users.
+          </div>
+          <div id="incomingMessages" class="border rounded p-2 mb-2 bg-white" style="height: 550px; overflow-y: auto;">
+
+
+          </div>
+          <div class="input-group">
+            <input type="text" id="agentReplyInput" class="form-control" placeholder="Type your reply...">
+            <button id="sendReplyBtn" class="btn btn-success">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="manager.js"></script>
+</body>
+
+</html>
