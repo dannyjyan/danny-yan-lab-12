@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const messageSchema = new mongoose.Schema({
     role: { type: String, enum: ['user', 'assistant'], required: true },
     content: { type: String, required: true },
+    evidence: mongoose.Schema.Types.Mixed,
 }, { _id: false });
 
 const conversationSchema = new mongoose.Schema({

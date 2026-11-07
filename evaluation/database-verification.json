@@ -1,0 +1,35 @@
+{
+  "checkedAt": "2026-11-07T22:22:18.391Z",
+  "description": "Independent read-only comparison after the live requests; not additional context sent to OpenRouter.",
+  "allEvidenceRecordsMatched": true,
+  "genres": [
+    "action",
+    "comedy",
+    "drama",
+    "horror",
+    "sci-fi"
+  ],
+  "sciFiMovies": [
+    {
+      "_id": "6aca9aa73227ddbd48cca527",
+      "name": "Inception",
+      "genre": "sci-fi",
+      "averageRating": 4.1,
+      "reviewCount": 2
+    },
+    {
+      "_id": "6aca9aa73227ddbd48cca52a",
+      "name": "Interstellar",
+      "genre": "sci-fi",
+      "averageRating": null,
+      "reviewCount": 0
+    },
+    {
+      "_id": "6aca9aa73227ddbd48cca52f",
+      "name": "Guardians of the Galaxy",
+      "genre": "sci-fi",
+      "averageRating": null,
+      "reviewCount": 0
+    }
+  ]
+}

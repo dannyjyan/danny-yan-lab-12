@@ -31,7 +31,7 @@ async function getMovieContext(question) {
         .project({ name: 1, genre: 1, averageRating: 1, reviewCount: 1 });
     await Promise.all(movies.map(async movie => {
         movie.reviews = await Review.find({ movieId: movie._id })
-            .select('comment rating -_id').sort({ createdAt: -1, _id: -1 }).limit(5).lean();
+            .select('comment rating').sort({ createdAt: -1, _id: -1 }).limit(5).lean();
     }));
 
     return {

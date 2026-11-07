@@ -98,8 +98,8 @@ sendChatBtn.addEventListener('click', () => {
 
 socket.off('agentReply'); // Ensure no duplicate listeners
 // Receive reply from server/agent
-socket.on('agentReply', (reply) => {
-    appendMessage('Agent', reply);
+socket.on('agentReply', (reply, evidence) => {
+    appendMessage('Agent', reply, evidence);
 
     // Re-enable input and button after receiving Gemini's response
     chatInput.disabled = false;
@@ -128,8 +128,35 @@ function formatTimestamp() {
     return `${date}, ${time}`;
 }
 
+// Convert common model formatting to readable text without interpreting HTML.
+function formatAssistantText(message) {
+    const lines = message.split('\n');
+    const output = [];
+    const cells = line => line.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(cell => cell.trim());
+    for (let index = 0; index < lines.length; index++) {
+        const separator = lines[index + 1];
+        if (lines[index].includes('|') && separator?.includes('|')
+            && cells(separator).every(cell => /^:?-{3,}:?$/.test(cell))) {
+            const headers = cells(lines[index]);
+            index += 2;
+            while (index < lines.length && lines[index].trim().startsWith('|')) {
+                output.push(cells(lines[index]).map((cell, column) => `${headers[column] || 'Details'}: ${cell}`).join('\n'), '');
+                index++;
+            }
+            index--;
+        } else {
+            output.push(lines[index]);
+        }
+    }
+    return output.join('\n')
+        .replace(/<br\s*\/?\s*>/gi, '\n')
+        .replace(/^\s*#{1,6}\s+/gm, '')
+        .replace(/\*\*([^*]+)\*\*/g, '$1')
+        .replace(/\*([^*\n]+)\*/g, '$1');
+}
+
 // Helper to show messages with proper format
-function appendMessage(sender, message) {
+function appendMessage(sender, message, evidence) {
     const messageDiv = document.createElement('div');
 
     // Determine the class based on the sender
@@ -147,10 +174,11 @@ function appendMessage(sender, message) {
     timestampElement.textContent = timestamp;
 
     const messageContent = document.createElement('p');
+    messageContent.className = 'message-content';
 
     // Determine the label based on the sender
     if (sender === 'Agent') {
-        messageContent.textContent = `🛎️ Agent (OpenRouter): ${message}`;
+        messageContent.textContent = `🛎️ Agent (OpenRouter): ${formatAssistantText(message)}`;
     } else if (sender === 'Manager') {
         messageContent.textContent = `👨‍💼 Manager: ${message}`;
     } else {
@@ -159,6 +187,44 @@ function appendMessage(sender, message) {
 
     messageDiv.appendChild(timestampElement);
     messageDiv.appendChild(messageContent);
+
+    if (evidence) {
+        const sources = document.createElement('details');
+        sources.className = 'message-sources';
+        const summary = document.createElement('summary');
+        const movies = evidence.context.movies;
+        const reviewCount = movies.reduce((count, movie) => count + movie.reviews.length, 0);
+        const historyCount = evidence.requestMessages.length - 2;
+        summary.textContent = `Sources: movies ×${movies.length} · reviews ×${reviewCount} · prior turns ×${historyCount}`;
+        const records = document.createElement('div');
+        for (const movie of movies) {
+            const record = document.createElement('p');
+            record.textContent = `${movie.name} [${movie._id}] · ${movie.reviews.length} reviews sent / ${movie.reviewCount} total · average ${movie.averageRating == null ? 'unrated' : movie.averageRating.toFixed(1)}`;
+            records.appendChild(record);
+        }
+        const genres = document.createElement('p');
+        genres.textContent = `Genres: ${evidence.context.genres.join(', ')}. Averages use all rated reviews; review text is limited to the 5 most recent per movie.`;
+        const raw = document.createElement('details');
+        const rawSummary = document.createElement('summary');
+        rawSummary.textContent = 'Exact prompt, response, and context';
+        const json = JSON.stringify(evidence, null, 2);
+        const pre = document.createElement('pre');
+        pre.textContent = json;
+        raw.append(rawSummary, pre);
+        const download = document.createElement('button');
+        download.type = 'button';
+        download.textContent = 'Download evidence JSON';
+        download.addEventListener('click', () => {
+            const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `movie-evidence-${evidence.id}.json`;
+            link.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        });
+        sources.append(summary, records, genres, raw, download);
+        messageDiv.appendChild(sources);
+    }
 
     chatWindow.appendChild(messageDiv);
     chatWindow.scrollTop = chatWindow.scrollHeight;

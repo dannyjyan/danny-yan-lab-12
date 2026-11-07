@@ -83,3 +83,26 @@ button {
     background: white;
     font-family: monospace;
 }
+
+.message-sources {
+    margin: 8px 0 16px;
+    font-size: 0.85rem;
+    text-align: left;
+}
+
+.message-content {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    text-align: left;
+}
+
+.message-sources summary {
+    cursor: pointer;
+}
+
+.message-sources pre {
+    max-height: 300px;
+    overflow: auto;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}

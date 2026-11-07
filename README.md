@@ -218,7 +218,7 @@ Keep context compact and label records clearly. For example, include a movie tit
 
 Test memory by sharing a movie or genre preference, continuing the conversation, and later asking the assistant to recall it.
 
-Run `npm test` with local MongoDB running to check saved history, session isolation, history limits, failed requests, and overlapping requests. The test uses a temporary database that it deletes afterward and stubs OpenRouter; it does not call a live model.
+Run `npm test` with local MongoDB running to check that reply evidence matches the model request, persists with the assistant message, and is excluded from subsequent conversation history. The test uses a temporary database that it deletes afterward and stubs OpenRouter; it does not call a live model.
 
 ### TODO 5: Evaluate and Document
 
@@ -231,6 +231,10 @@ Run `npm test` with local MongoDB running to check saved history, session isolat
 7. Explain how database context affected the response.
 
 Do not claim that a response is grounded merely because it sounds correct. Show that the relevant records were retrieved and included in the request.
+
+Each successful AI reply has an expandable **Sources** line listing the number of movie records, review records, and prior chat turns sent. Expand it to see movie IDs, review counts, and the exact prompt, response, and request context. **Download evidence JSON** saves that snapshot for evaluation. Review IDs are included; reviewer identities and API credentials are excluded. Evidence is also saved on the assistant message in `conversations`, subject to the same 20-message retention limit. Download it before older turns are trimmed.
+
+The source list shows what was supplied to the model, not proof that every response claim is correct. Review-average values use all stored numeric review ratings; only the latest five review texts per movie are included. Evidence records both the requested route and the actual response model when OpenRouter reports it. See `evaluation/accuracy-report.md` for the evaluated responses and scoring method.
 
 ## Completion Checklist
 
