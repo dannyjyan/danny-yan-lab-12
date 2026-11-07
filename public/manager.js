@@ -6,6 +6,7 @@ const socket = io(BASE_URL);
 async function loadMovies() {
     try {
         const res = await fetch(`${BASE_URL}/movies`);
+        if (!res.ok) throw new Error('Unable to load movies.');
         const movies = await res.json();
 
         const tbody = document.querySelector('#movieTable tbody');
@@ -15,7 +16,7 @@ async function loadMovies() {
             row.innerHTML = `
                 <td>${movie.name}</td>
                 <td>${movie.genre}</td>
-                <td>${movie.rating}</td>
+                <td>${movie.averageRating == null ? 'No ratings yet' : movie.averageRating.toFixed(1)}</td>
                 <td><a href="details.html?id=${movie._id}">Details</a></td>
             `;
             tbody.appendChild(row);

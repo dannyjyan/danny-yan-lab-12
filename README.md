@@ -4,7 +4,9 @@
 
 In this lab, extend the **Movie Manager** with a chat assistant that answers questions using movie and rating data stored in MongoDB. The application uses Node.js, Express, Socket.IO, Mongoose, and the OpenRouter chat completions API. Messages containing `@openrouter` are sent from the browser to the Express server, which retrieves relevant records and includes them as context in the model request.
 
-The server retrieves focused movie records for each OpenRouter request. It does not retain conversation history, so each request is independent. Extend the context as needed and evaluate whether responses accurately reflect the source data.
+The server retrieves focused movie records for each OpenRouter request and includes the conversation’s recent messages. Evaluate whether responses accurately reflect the source data.
+
+AI conversations use a random session token stored in the browser tab’s `sessionStorage`, so refreshing or reconnecting that tab keeps its conversation. The `conversations` collection stores up to 20 recent user/assistant messages per token, in chronological order. Each request includes that history before the newest question and database context. Only messages containing `@openrouter` and successful assistant replies are saved; failed requests retain the user question without inventing an assistant reply. AI messages and replies are not broadcast to other chats or the manager. Normal manager messages retain their existing behavior. Keep the session token private; this lab uses session tokens rather than user accounts. To test a separate conversation, open the app independently in another tab (duplicating a tab can copy its session storage).
 
 ## Learning Objectives
 
@@ -34,7 +36,9 @@ Keep API keys and database credentials on the server. Do not commit `.env` or pu
 ## Project Structure
 
 - `server.js` configures Express, Socket.IO, Mongoose, OpenRouter, and the movie routes.
-- `models/Movie.js` defines the Mongoose movie model using the Lab 3 schema.
+- `models/Movie.js` defines the movie model (`name`, `genre`, and `rating`).
+- `models/Review.js` reads written reviews from the existing `reviews` collection.
+- `movie-context.js` selects movies and reviews for assistant requests.
 - `public/index.html` contains the movie search and chat interface.
 - `public/script.js` sends user messages and renders assistant and manager replies.
 - `public/manager.html` and `public/manager.js` provide the manager dashboard.
@@ -117,7 +121,7 @@ The movie API is also backed by the same Mongoose model:
 | `GET` | `/movies/search/:name` | Return partial, case-insensitive name matches. |
 | `GET` | `/movies/:id` | Return one movie by its MongoDB ID. |
 
-`models/Movie.js` follows the Lab 3 schema (`name`, `genre`, and numeric `review`) and allows additional fields such as `director`, `protagonist`, and `year`. `server.js` connects through Mongoose once at startup and queries the `Movie` model for assistant context.
+The current database uses the later labs’ schema: movies have `name`, `genre`, and numeric `rating`; written reviews are stored in `reviews` with `movieId`, `comment`, `rating`, and `createdAt`. `server.js` connects through Mongoose once at startup. The UI and assistant use `averageRating`, calculated from stored reviews; movies without ratings have a null average. The legacy movie `rating` field is not used for assistant recommendations.
 
 Example Mongoose lookup for a title and its stored fields:
 
@@ -133,7 +137,7 @@ For example, escape input before using it in a regular expression:
 const escapedSearchTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 ```
 
-The assistant retrieves matching movie records, distinct genres, or the highest-rated movies depending on the question. It limits results before sending them as context. The Lab 3 `review` field is numeric, so it is treated as a rating. If your database stores written reviews in a separate collection, extend the query to retrieve those too.
+For specific movie questions, the assistant matches full titles. Recommendation questions retrieve candidates by the named genre, or the genre of a referenced movie if no genre is named, and recognize exclusions such as “excluding Inception,” “other than Inception,” and “don’t recommend Inception.” Otherwise, it selects movies by highest average review rating. It includes the database’s distinct genres, up to 10 movies, and up to 5 recent written reviews per selected movie. Reviewer identities are excluded. Questions using partial titles may need the full title to retrieve the intended record.
 
 ## Add MongoDB Records as OpenRouter Context
 
@@ -213,6 +217,8 @@ Keep context compact and label records clearly. For example, include a movie tit
 7. Keep one user's conversation separate from every other user's conversation.
 
 Test memory by sharing a movie or genre preference, continuing the conversation, and later asking the assistant to recall it.
+
+Run `npm test` with local MongoDB running to check saved history, session isolation, history limits, failed requests, and overlapping requests. The test uses a temporary database that it deletes afterward and stubs OpenRouter; it does not call a live model.
 
 ### TODO 5: Evaluate and Document
 

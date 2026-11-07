@@ -56,7 +56,13 @@ clearButton.addEventListener('click', () => {
 });
 
 // Setup WebSocket connection
-const socket = io(BASE_URL);
+const socket = io(BASE_URL, {
+    auth: { conversationId: sessionStorage.getItem('conversationId') },
+});
+socket.on('conversationSession', (conversationId) => {
+    sessionStorage.setItem('conversationId', conversationId);
+    socket.auth.conversationId = conversationId;
+});
 
 // DOM elements
 const chatWindow = document.getElementById('chatWindow');

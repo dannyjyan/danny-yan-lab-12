@@ -10,8 +10,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     try {
-        // Load movie (still fetched from backend)
+        // Load the movie and its stored reviews.
         const res = await fetch(`${BASE_URL}/movies/${movieId}`);
+        if (!res.ok) throw new Error('Unable to load movie.');
         const movie = await res.json();
 
         const detailsContainer = document.getElementById('details');
@@ -21,58 +22,42 @@ document.addEventListener('DOMContentLoaded', async () => {
         title.textContent = movie.name;
 
         const genre = document.createElement('p');
-        genre.innerHTML = `<strong>Genre:</strong> ${movie.genre}`;
+        genre.textContent = `Genre: ${movie.genre}`;
 
-        // MOCKED REVIEWS (replace backend with sample data)
-        const randomCount = Math.floor(Math.random() * 5) + 1; // 1 to 5 reviews
-
-        // Generate placeholder reviews
-        const reviews = Array.from({ length: randomCount });
+        const reviews = movie.reviews;
 
         // Render reviews
         const reviewList = document.getElementById('reviewList');
         reviewList.textContent = '';
 
-        let totalRating = 0;
-
         if (reviews.length === 0) {
             reviewList.textContent = 'No reviews yet.';
         } else {
-            reviews.forEach((_, i) => {
-                const rating = Math.floor(Math.random() * 5) + 1; // Random rating between 1 and 5
-                totalRating += rating;
-
+            reviews.forEach((review) => {
                 const row = document.createElement('div');
                 row.classList.add('d-flex', 'mb-3', 'border-bottom', 'pb-3', 'gap-3');
-
-                const avatar = document.createElement('img');
-                avatar.src = 'profile_img.png';
-                avatar.alt = 'User avatar';
-                avatar.classList.add('rounded-circle');
-                avatar.width = 48;
-                avatar.height = 48;
 
                 const content = document.createElement('div');
 
                 const header = document.createElement('p');
                 header.classList.add('mb-1');
-                header.innerHTML = `<strong>Reviewer ${i + 1}</strong> | Rating: <strong>${rating}</strong>`;
+                header.textContent = `Rating: ${review.rating ?? 'Not rated'}`;
 
                 const comment = document.createElement('p');
                 comment.classList.add('fst-italic', 'mb-0');
-                comment.textContent = `This is a hardcoded comment ${i + 1}. Replace with real data later.`;
+                comment.textContent = review.comment;
 
                 content.append(header, comment);
-                row.append(avatar, content);
+                row.append(content);
                 reviewList.appendChild(row);
             });
         }
 
 
-        // Compute and display the average rating
-        const averageRating = 0 //replace this
         const rating = document.createElement('p');
-        rating.innerHTML = `<strong>Rating:</strong> ${averageRating} (NOT YET IMPLEMENTED)`;
+        rating.textContent = movie.averageRating == null
+            ? 'Rating: No ratings yet'
+            : `Rating: ${movie.averageRating.toFixed(1)} (${movie.reviewCount} reviews)`;
 
         detailsContainer.append(title, genre, rating);
         // Create edit/delete buttons
